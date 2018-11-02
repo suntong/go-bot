@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/base64"
 )
 
 func NewMessage() *message {
@@ -15,6 +16,8 @@ type message struct {
 func (m *message) Message() interface{} {
 	return m.data
 }
+
+// 区分more和alone
 func (m *message) AddMsg(msg interface{}) *message {
 
 	if v, ok := msg.(alone); ok {
@@ -105,6 +108,15 @@ func CQimage(url string) more {
 	}
 }
 
+func CQBase64image(data []byte) more {
+	return more{
+		Type: "image",
+		Data: struct {
+			File string `json:"file"`
+		}{File: encode(data)},
+	}
+}
+
 func CQrecord(url string, magic bool) more {
 	return more{
 		Type: "record",
@@ -113,6 +125,24 @@ func CQrecord(url string, magic bool) more {
 			Magic bool   `json:"magic"`
 		}{File: url, Magic: magic},
 	}
+}
+
+func CQBase64record(data []byte, magic bool) more {
+	return more{
+		Type: "record",
+		Data: struct {
+			File  string `json:"file"`
+			Magic bool   `json:"magic"`
+		}{File: encode(data), Magic: magic},
+	}
+}
+
+func encode(raw []byte) string {
+	var encoded bytes.Buffer
+	encoder := base64.NewEncoder(base64.StdEncoding, &encoded)
+	encoder.Write(raw)
+	encoder.Close()
+	return "base64://" + encoded.String()
 }
 
 func CQrps() more {

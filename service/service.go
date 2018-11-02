@@ -19,6 +19,7 @@ func LoadService(addr string) {
 	if err := apiService(addr); err != nil {
 		// 记入
 	}
+
 	mux.Wait()
 }
 

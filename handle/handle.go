@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 )
 
-func Handle(bytes []byte) error {
+func Handle(data []byte) error {
 	// 返回错误关闭
 	var e eventJSON
-	if err := json.Unmarshal(bytes, &e); err != nil {
+	if err := json.Unmarshal(data, &e); err != nil {
 		return err
 	}
 	return nil
