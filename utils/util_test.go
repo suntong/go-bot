@@ -13,3 +13,10 @@ func TestAddMsg(t *testing.T) {
 	s := string(d)
 	t.Log(s)
 }
+
+func TestFransferred(t *testing.T) {
+	result := Fransferred("ss[QC:file,url:https://juejin.im]asdzsczasd[QC:file,url:https://juejin.im]zzzzz")
+	if result != "ssasdzsczasdzzzzz" {
+		t.Error(result)
+	}
+}

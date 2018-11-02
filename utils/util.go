@@ -1,5 +1,9 @@
 package utils
 
+import (
+	"bytes"
+)
+
 func NewMessage() *message {
 	return &message{}
 }
@@ -178,4 +182,30 @@ func CQshare(url string, title string, content string, image string) alone {
 			Image   string `json:"image"`
 		}{Url: url, Title: title, Content: content, Image: image},
 	}
+}
+
+// raw处理
+func Fransferred(rawString string) string {
+	rawBytes := []byte(rawString)
+	result := bytes.NewBuffer([]byte{})
+	var c = true
+	for i := range rawBytes {
+		if rawBytes[i] == byte('[') {
+			c = false
+			continue
+		}
+		if rawBytes[i] == byte(']') {
+			c = true
+			continue
+		}
+
+		if !c {
+			continue
+		}
+		err := result.WriteByte(rawBytes[i])
+		if err != nil {
+			return ""
+		}
+	}
+	return result.String()
 }

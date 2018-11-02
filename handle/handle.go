@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 )
 
-var testC = make(chan interface{}, 100)
-
 func Handle(bytes []byte) error {
 	// 返回错误关闭
 	var e eventJSON
