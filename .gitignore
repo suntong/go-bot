@@ -2,3 +2,4 @@ main
 go-bot
 *.silk
 *.mp3
+.DS_Store
