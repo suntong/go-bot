@@ -20,3 +20,10 @@ func TestFransferred(t *testing.T) {
 		t.Error(result)
 	}
 }
+
+func TestAtSelf(t *testing.T) {
+	result := "[CQ:at,qq=1927546423] 测试"
+	if AtSelf(result, 1927546423) == false {
+		t.Error("err")
+	}
+}

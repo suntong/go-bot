@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"go-bot/asynchronous"
 	"go-bot/service"
 )
 
@@ -16,5 +17,10 @@ func main() {
 	// 开启日志
 
 	// 开启服务
+	go func() {
+		for {
+			asynchronous.Douyu()
+		}
+	}()
 	service.LoadService(*addr)
 }

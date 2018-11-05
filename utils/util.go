@@ -3,6 +3,8 @@ package utils
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
+	"strings"
 )
 
 func NewMessage() *message {
@@ -50,7 +52,7 @@ func CQtext(text string) more {
 		Type: "text",
 		Data: struct {
 			Text string `json:"text"`
-		}{Text: text},
+		}{Text: fmt.Sprint(" ", text)},
 	}
 }
 
@@ -238,4 +240,40 @@ func Fransferred(rawString string) string {
 		}
 	}
 	return result.String()
+}
+
+// raw处理
+func GetQC(rawString string) string {
+	rawBytes := []byte(rawString)
+	result := bytes.NewBuffer([]byte{})
+	var c = false
+	for i := range rawBytes {
+		if rawBytes[i] == byte('[') {
+			c = true
+			result.WriteByte(byte('['))
+			continue
+		}
+		if rawBytes[i] == byte(']') {
+			c = false
+			result.WriteByte(byte(']'))
+			continue
+		}
+
+		if !c {
+			continue
+		}
+		err := result.WriteByte(rawBytes[i])
+		if err != nil {
+			return ""
+		}
+	}
+	return result.String()
+}
+
+func AtSelf(raw string, self int64) bool {
+	s := fmt.Sprintf("[CQ:at,qq=%d]", self)
+	if strings.Index(raw, s) > -1 {
+		return true
+	}
+	return false
 }
