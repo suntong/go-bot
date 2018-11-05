@@ -3,3 +3,5 @@ go-bot
 *.silk
 *.mp3
 .DS_Store
+conf.yaml
+.vscode
