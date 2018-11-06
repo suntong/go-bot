@@ -79,7 +79,6 @@ func GetTencentChat(text string) string {
 	req, _ := url.Parse(apiUrl)
 	req.RawQuery = createTencentChat(text)
 	resp, _ := http.DefaultClient.Get(req.String())
-	defer resp.Body.Close()
 	d, _ := ioutil.ReadAll(resp.Body)
 	var result chatResp
 	json.Unmarshal(d, &result)
