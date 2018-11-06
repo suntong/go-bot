@@ -3,7 +3,7 @@ package asynchronous
 import (
 	"encoding/json"
 	"fmt"
-	"go-bot/messages"
+	"go-bot/pkg/memory"
 	"go-bot/pkg/message"
 	"go-bot/utils"
 	"io/ioutil"
@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	roomID = []string{"斗鱼-533640"}
+	roomID = []string{}
 )
 
 var (
@@ -53,7 +53,7 @@ func Douyu() {
 					m.AddMsg(utils.CQshare(fmt.Sprintf("https://www.douyu.com/%s", result.Data.Roomid),
 						result.Data.Owner, result.Data.RoomName, result.Data.Avatar))
 					for g := range group {
-						messages.GetDefaultMessages().Push(
+						memory.DefaultMes.Push(
 							message.SendMsg(message.MSG_GROUP, group[g], m.Message(), false, ""),
 						)
 					}
@@ -88,7 +88,7 @@ func Douyu() {
 					m.AddMsg(utils.CQshare(fmt.Sprintf("http://www.panda.tv/%s", result.Data.Info.ID),
 						result.Data.User.Name, result.Data.Info.Name, result.Data.User.Avatar))
 					for g := range group {
-						messages.GetDefaultMessages().Push(
+						memory.DefaultMes.Push(
 							message.SendMsg(message.MSG_GROUP, group[g], m.Message(), false, ""),
 						)
 					}

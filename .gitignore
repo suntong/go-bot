@@ -5,3 +5,4 @@ go-bot
 .DS_Store
 conf.yaml
 .vscode
+log/

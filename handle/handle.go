@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-bot/intelligence"
-	"go-bot/messages"
+	"go-bot/pkg/memory"
 	"go-bot/pkg/message"
 	"go-bot/utils"
-	"log"
+
+	"github.com/lexkong/log"
 )
 
 func load(e message.EventJSON, mw ...func(message.EventJSON) interface{}) interface{} {
@@ -32,10 +33,10 @@ func Handle(data []byte) error {
 			go func(goh message.EventJSON) {
 				m := utils.NewMessage()
 				m.AddMsg(utils.CQat(fmt.Sprint(goh.UserID)))
-				m.AddMsg(utils.CQtext(intelligence.GetChat(
+				m.AddMsg(utils.CQtext(intelligence.GetTencentChat(
 					utils.Fransferred(goh.RawMsg),
 				)))
-				messages.GetDefaultMessages().Push(
+				memory.DefaultMes.Push(
 					message.SendMsg(goh.MsgType, goh.GroupID,
 						m.Message(), false, ""),
 				)
@@ -47,10 +48,9 @@ func Handle(data []byte) error {
 }
 
 func Send() interface{} {
-	c := messages.GetDefaultMessages()
-	r, err := c.Pop()
+	r, err := memory.DefaultMes.Pop()
 	if err != nil {
-		log.Fatal(err)
+		log.Error("send", err)
 	}
 	return message.String2Interface(r)
 }

@@ -1,26 +1,28 @@
 package main
 
 import (
-	"flag"
-	"go-bot/asynchronous"
+	"go-bot/config"
+	"go-bot/pkg/memory"
 	"go-bot/service"
+
+	"github.com/spf13/pflag"
 )
 
-var addr = flag.String("addr", "localhost:8080", "service address")
+var (
+	addr = pflag.StringP("addr", "d", "localhost:8080", "service address")
+	cfg  = pflag.StringP("config", "c", "", "apiserver config file path.")
+)
 
 func main() {
-	flag.Parse()
+	pflag.Parse()
 	// 开启延时队列
 
-	// 开启数据库
-
 	// 开启日志
-
+	if err := config.Init(*cfg); err != nil {
+		panic(err)
+	}
 	// 开启服务
-	go func() {
-		for {
-			asynchronous.Douyu()
-		}
-	}()
+	memory.InitRedis()
+
 	service.LoadService(*addr)
 }

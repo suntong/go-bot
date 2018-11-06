@@ -3,7 +3,7 @@ package handle
 import (
 	"fmt"
 	"go-bot/intelligence"
-	"go-bot/messages"
+	"go-bot/pkg/memory"
 	"go-bot/pkg/message"
 	"go-bot/utils"
 	"strings"
@@ -25,7 +25,7 @@ func Command(s message.EventJSON) interface{} {
 				m := utils.NewMessage()
 				m.AddMsg(utils.CQat(fmt.Sprint(goh.UserID)))
 				m.AddMsg(utils.CQBase64record(intelligence.GetBaiduAudio(text), false))
-				messages.GetDefaultMessages().Push(
+				memory.DefaultMes.Push(
 					message.SendMsg(goh.MsgType, goh.GroupID,
 						m.Message(), false, ""),
 				)
@@ -35,7 +35,7 @@ func Command(s message.EventJSON) interface{} {
 			go func(goh message.EventJSON, text string) {
 				m := utils.NewMessage()
 				m.AddMsg(utils.CQtext(text))
-				messages.GetDefaultMessages().Push(
+				memory.DefaultMes.Push(
 					message.SendMsg(message.MSG_PRIVATE, goh.UserID,
 						m.Message(), false, goh.MsgType),
 				)

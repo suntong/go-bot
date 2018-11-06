@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"sync"
 
+	"github.com/lexkong/log"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -13,11 +15,11 @@ var mux sync.WaitGroup
 func LoadService(addr string) {
 	mux.Add(2)
 	if err := eventService(addr); err != nil {
-		// 记入
+		log.Error("service", err)
 	}
 
 	if err := apiService(addr); err != nil {
-		// 记入
+		log.Error("service", err)
 	}
 
 	mux.Wait()
@@ -35,10 +37,12 @@ func eventService(addr string) error {
 		for {
 			_, b, err := c.ReadMessage()
 			if err != nil {
+				log.Error("read message", err)
 				break
 			}
 			err = handle.Handle(b)
 			if err != nil {
+				log.Error("handle", err)
 				break
 			}
 		}
@@ -60,6 +64,7 @@ func apiService(addr string) error {
 			if result := handle.Send(); result != nil {
 				err := c.WriteJSON(result)
 				if err != nil {
+					log.Error("write JSON", err)
 					break
 				}
 			}
