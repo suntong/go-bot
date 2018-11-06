@@ -48,3 +48,7 @@ func Command(s message.EventJSON) interface{} {
 
 	return s
 }
+
+func handleCmd(cmd []string) (int, string) {
+	return 0, ""
+}
