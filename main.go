@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-bot/asynchronous"
 	"go-bot/config"
 	"go-bot/pkg/memory"
 	"go-bot/service"
@@ -24,5 +25,10 @@ func main() {
 	// 开启服务
 	memory.InitRedis()
 
+	go func() {
+		for {
+			asynchronous.Live()
+		}
+	}()
 	service.LoadService(*addr)
 }

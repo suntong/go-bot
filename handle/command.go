@@ -6,7 +6,10 @@ import (
 	"go-bot/pkg/memory"
 	"go-bot/pkg/message"
 	"go-bot/utils"
+	"strconv"
 	"strings"
+
+	"github.com/lexkong/log"
 )
 
 // 通用
@@ -18,6 +21,29 @@ func Command(s message.EventJSON) interface{} {
 
 	raw := strings.Trim(utils.Fransferred(s.RawMsg), " ")
 	l := strings.Split(raw, " ")
+
+	if len(l) == 3 && l[0] == "监控直播" && (l[1] == "斗鱼" || l[1] == "熊猫" || l[1] == "B站" || l[1] == "虎牙") {
+		go func(goh message.EventJSON, text string, room string) {
+			text = strings.Trim(text, " ")
+			tmp, err := strconv.ParseInt(text, 10, 64)
+			if err != nil {
+				log.Error("监控", err)
+				return
+			}
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQtext(
+				fmt.Sprintf("监控[%s]频道", fmt.Sprintf("%d", tmp)),
+			))
+			memory.DefaultMes.Push(
+				message.SendMsg(goh.MsgType, goh.GroupID,
+					m.Message(), false, ""),
+			)
+			fmt.Println(memory.GetLive(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")).Push(goh.GroupID))
+			fmt.Println(memory.GetLive("liveRoom").Push(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")))
+		}(s, l[2], l[1])
+		return nil
+	}
+
 	if len(l) > 1 {
 		switch l[0] {
 		case "语音":

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lexkong/log"
 	"github.com/spf13/viper"
 	"github.com/teris-io/shortid"
 )
@@ -58,7 +59,11 @@ func createTencentAudio(text string) string {
 func GetTencentAudio(text string) []byte {
 	req, _ := url.Parse(ttsUrl)
 	req.RawQuery = createTencentAudio(text)
-	resp, _ := http.DefaultClient.Get(req.String())
+	resp, err := http.DefaultClient.Get(req.String())
+	if err != nil {
+		log.Error("TencentAudio", err)
+		return []byte{}
+	}
 	defer resp.Body.Close()
 	d, _ := ioutil.ReadAll(resp.Body)
 	var result audioResp
@@ -78,7 +83,12 @@ func GetTencentAudio(text string) []byte {
 func GetTencentChat(text string) string {
 	req, _ := url.Parse(apiUrl)
 	req.RawQuery = createTencentChat(text)
-	resp, _ := http.DefaultClient.Get(req.String())
+	resp, err := http.DefaultClient.Get(req.String())
+	if err != nil {
+		log.Error("TencentChat", err)
+		return ""
+	}
+	defer resp.Body.Close()
 	d, _ := ioutil.ReadAll(resp.Body)
 	var result chatResp
 	json.Unmarshal(d, &result)

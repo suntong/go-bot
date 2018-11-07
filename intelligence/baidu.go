@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/lexkong/log"
+
 	"github.com/spf13/viper"
 )
 
@@ -22,7 +24,12 @@ func getBaiduToken() string {
 	uu, _ := url.Parse("https://openapi.baidu.com/oauth/2.0/token")
 	uu.RawQuery = u.Encode()
 	fmt.Println(uu.String())
-	resp, _ := http.DefaultClient.Get(uu.String())
+	resp, err := http.DefaultClient.Get(uu.String())
+	if err != nil {
+		log.Error("baiduToken", err)
+		return ""
+	}
+	defer resp.Body.Close()
 	fmt.Println(resp)
 	var j struct {
 		Token string `json:"access_token"`
@@ -50,6 +57,7 @@ func GetBaiduAudio(text string) []byte {
 	req.RawQuery = createBaiduAudio(text)
 	resp, err := http.DefaultClient.Get(req.String())
 	if err != nil {
+		log.Error("BaiduAudio", err)
 		return []byte{}
 	}
 	defer resp.Body.Close()
