@@ -38,8 +38,8 @@ func Command(s message.EventJSON) interface{} {
 				message.SendMsg(goh.MsgType, goh.GroupID,
 					m.Message(), false, ""),
 			)
-			fmt.Println(memory.GetLive(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")).Push(goh.GroupID))
-			fmt.Println(memory.GetLive("liveRoom").Push(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")))
+			memory.GetLive(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")).Push(goh.GroupID)
+			memory.GetLive("liveRoom").Push(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-"))
 		}(s, l[2], l[1])
 		return nil
 	}
@@ -50,7 +50,7 @@ func Command(s message.EventJSON) interface{} {
 			go func(goh message.EventJSON, text string) {
 				m := utils.NewMessage()
 				m.AddMsg(utils.CQat(fmt.Sprint(goh.UserID)))
-				m.AddMsg(utils.CQBase64record(intelligence.GetBaiduAudio(text), false))
+				m.AddMsg(utils.CQBase64record(intelligence.GetRokidAudio(text), false))
 				memory.DefaultMes.Push(
 					message.SendMsg(goh.MsgType, goh.GroupID,
 						m.Message(), false, ""),

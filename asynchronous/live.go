@@ -19,6 +19,7 @@ import (
 // 修改为并发安全
 var (
 	registerID = make(map[string]string)
+	blibilire  = regexp.MustCompile(`(?m)room_id"\s*:\s*(\d+)\s*,[\s\S]+?user_cover\s*"\s*:\s*"([\s\S]+?)"\s*,[\s\S]+?uname\s*"\s*:\s*"([\s\S]+?)"\s*,[\s\S]+?live_status\s*"\s*:\s*(\d+)\s*[\s\S]+?title\s*"\s*:\s*"([\s\S]+?)"\s*,`)
 	re         = regexp.MustCompile(`(?m)picURL\s*=\s*'(.+?)'\s*[\s\S]+?liveRoomName\s*=\s*'(.+?)'\s*;[\s\S]+?ISLIVE\s*=\s*([a-z]+)\s*;[\s\S]+?TOPSID\s*=\s*'(.+?)'\s*;[\s\S]+?ANTHOR_NICK\s*=\s*'(.+?)'\s*;`)
 )
 
@@ -39,7 +40,7 @@ func Live() {
 				} `json:"data"`
 			}
 
-			req, err := http.NewRequest("GET", fmt.Sprintf("http://open.douyucdn.cn/api/RoomApi/room/%s", l[1]), strings.NewReader(""))
+			req, err := http.NewRequest("GET", fmt.Sprintf("http://open.douyucdn.cn/api/RoomApi/room/%s", l[1]), nil)
 			if err != nil {
 				log.Error("douyu", err)
 				break
@@ -48,7 +49,7 @@ func Live() {
 			req.Header.Set("Cache-Control", "no-cache")
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Error("xionmao", err)
+				log.Error("douyu", err)
 				break
 			}
 			r, _ := ioutil.ReadAll(resp.Body)
@@ -94,7 +95,7 @@ func Live() {
 					} `json:"hostinfo"`
 				} `json:"data"`
 			}
-			req, err := http.NewRequest("GET", fmt.Sprintf("http://www.panda.tv/api_room_v2?roomid=%s", l[1]), strings.NewReader(""))
+			req, err := http.NewRequest("GET", fmt.Sprintf("http://www.panda.tv/api_room_v2?roomid=%s", l[1]), nil)
 			if err != nil {
 				log.Error("xionmao", err)
 				break
@@ -135,57 +136,57 @@ func Live() {
 				}
 			}
 		case "B站":
-			var result struct {
-				Data struct {
-					ID     string `json:"roomid"`
-					Name   string `json:"uname"`
-					Status string `json:"live_status"`
-					Title  string `json:"title"`
-					Cover  string `json:"user_cover"`
-				} `json:"data"`
-			}
-			req, err := http.NewRequest("GET", fmt.Sprintf("https://api.live.bilibili.com/room/v1/RoomStatic/get_room_static_info?room_id=%s", l[1]), strings.NewReader(""))
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://live.bilibili.com/%s", l[1]), nil)
 			if err != nil {
 				log.Error("bilibili", err)
 				break
 			}
 			req.Header.Set("If-Modified-Since", "0")
 			req.Header.Set("Cache-Control", "no-cache")
+			req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36")
+			req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+			req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
 			resp, err := client.Do(req)
 			if err != nil {
 				log.Error("bilibili", err)
 				break
 			}
+			// 顺序 1 房间号 2 图片 3 名字 4 状态 5 标题
+			var out = make([]string, 6)
 			r, _ := ioutil.ReadAll(resp.Body)
+			for i, match := range blibilire.FindStringSubmatch(string(r)) {
+				out[i] = match
+			}
+			out[2], _ = strconv.Unquote(`"` + out[2] + `"`)
+			// url解析
 			resp.Body.Close()
-			json.Unmarshal(r, &result)
 			// 开播
-			if result.Data.Status == "1" {
+			if out[4] == "1" {
 				m := utils.NewMessage()
-				m.AddMsg(utils.CQshare(fmt.Sprintf("https://live.bilibili.com/%s", result.Data.ID),
-					result.Data.Name, result.Data.Status, result.Data.Cover))
+				m.AddMsg(utils.CQshare(fmt.Sprintf("https://live.bilibili.com/%s", out[1]),
+					out[3], out[5], out[2]))
 				group, err := memory.GetLive(roomID[i]).Range()
 				if err != nil {
 					log.Error("bilibili", err)
 				}
 				for _, v := range group {
 					tmp, _ := strconv.ParseInt(v, 10, 64)
-					if registerID[strings.Join([]string{"B站", l[1], v}, "-")] != result.Data.Status {
+					if registerID[strings.Join([]string{"bilibili", l[1], v}, "-")] != out[4] {
 						memory.DefaultMes.Push(
 							message.SendMsg(message.MSG_GROUP, tmp, utils.NewMessage().
 								AddMsg(utils.CQat("all")).
-								AddMsg(utils.CQtext(fmt.Sprintf("[%s]开播了！！！", result.Data.Name))).
+								AddMsg(utils.CQtext(fmt.Sprintf("[%s]开播了！！！", out[3]))).
 								Message(), false, ""),
 						)
 						memory.DefaultMes.Push(
 							message.SendMsg(message.MSG_GROUP, tmp, m.Message(), false, ""),
 						)
-						registerID[strings.Join([]string{"B站", l[1], v}, "-")] = result.Data.Status
+						registerID[strings.Join([]string{"bilibili", l[1], v}, "-")] = out[4]
 					}
 				}
 			}
 		case "虎牙":
-			req, err := http.NewRequest("GET", fmt.Sprintf("https://m.huya.com/%s", l[1]), strings.NewReader(""))
+			req, err := http.NewRequest("GET", fmt.Sprintf("https://m.huya.com/%s", l[1]), nil)
 			if err != nil {
 				log.Error("huya", err)
 				break
