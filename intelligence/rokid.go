@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/lexkong/log"
 )
 
@@ -39,16 +41,25 @@ func makeMD5(data string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+const (
+	ttsRokidApi = "https://apigwrest.open.rokid.com/api/v1/tts/TtsProxy/Tts"
+)
+
 func GetRokidAudio(text string) []byte {
 	client := &http.Client{}
-
+	out := generateAuthorization(viper.GetString("rokid.version"),
+		viper.GetString("rokid.secret"),
+		viper.GetString("rokid.key"),
+		viper.GetString("rokid.device_type_id"),
+		viper.GetString("rokid.device_id"),
+		viper.GetString("name"))
 	j := struct {
 		Text      string `json:"text"`
 		Declaimer string `json:"declaimer"`
 		Codec     string `json:"codec"`
 	}{Text: text, Declaimer: "xmly", Codec: "mp3"}
 	jsonBytes, _ := json.Marshal(&j)
-	req, err := http.NewRequest("POST", "https://apigwrest.open.rokid.com/api/v1/tts/TtsProxy/Tts", bytes.NewReader(jsonBytes))
+	req, err := http.NewRequest("POST", ttsRokidApi, bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Error("rokid", err)
 		return []byte{}

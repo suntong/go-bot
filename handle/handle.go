@@ -31,14 +31,10 @@ func Handle(data []byte) error {
 		h := r.(message.EventJSON)
 		if utils.AtSelf(h.RawMsg, h.Self) && h.MsgType == message.MSG_GROUP {
 			go func(goh message.EventJSON) {
-				m := utils.NewMessage()
-				m.AddMsg(utils.CQat(fmt.Sprint(goh.UserID)))
-				m.AddMsg(utils.CQtext(intelligence.GetTencentChat(
-					utils.Fransferred(goh.RawMsg),
-				)))
 				memory.DefaultMes.Push(
 					message.SendMsg(goh.MsgType, goh.GroupID,
-						m.Message(), false, ""),
+						intelligence.GetTulingChat(
+							0, utils.Fransferred(goh.RawMsg), fmt.Sprint(h.UserID), fmt.Sprint(h.GroupID), h.Sender.Nick, true), false, ""),
 				)
 			}(h)
 		}
