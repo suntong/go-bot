@@ -27,7 +27,8 @@ func Handle(data []byte) error {
 	if err := json.Unmarshal(data, &e); err != nil {
 		return err
 	}
-	if r := load(e, Command); r != nil {
+	if r := load(e,
+		Command); r != nil {
 		h := r.(message.EventJSON)
 		if utils.AtSelf(h.RawMsg, h.Self) && h.MsgType == message.MSG_GROUP {
 			go func(goh message.EventJSON) {
@@ -39,7 +40,6 @@ func Handle(data []byte) error {
 			}(h)
 		}
 	}
-	fmt.Println(string(data))
 	return nil
 }
 

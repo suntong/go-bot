@@ -71,11 +71,16 @@ func GetRokidAudio(text string) []byte {
 		log.Error("rokid", err)
 		return []byte{}
 	}
+
 	var result struct {
 		Data string `json:"voice"`
 	}
 
-	voiceBytes, _ := ioutil.ReadAll(resp.Body)
+	voiceBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error("rokid", err)
+		return []byte{}
+	}
 	json.Unmarshal(voiceBytes, &result)
 	str := result.Data
 	str, _ = url.PathUnescape(str)

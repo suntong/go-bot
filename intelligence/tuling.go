@@ -91,6 +91,7 @@ func GetTulingChat(reqType int, text, userId, groupId, userIdName string, at boo
 	}
 
 	json.Unmarshal(body, &out)
+
 	m := utils.NewMessage()
 	if at {
 		m.AddMsg(utils.CQat(userId))

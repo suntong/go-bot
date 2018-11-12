@@ -16,7 +16,6 @@ import (
 	"github.com/lexkong/log"
 )
 
-// 修改为并发安全
 var (
 	registerID = make(map[string]string)
 	blibilire  = regexp.MustCompile(`(?m)room_id"\s*:\s*(\d+)\s*,[\s\S]+?user_cover\s*"\s*:\s*"([\s\S]+?)"\s*,[\s\S]+?uname\s*"\s*:\s*"([\s\S]+?)"\s*,[\s\S]+?live_status\s*"\s*:\s*(\d+)\s*[\s\S]+?title\s*"\s*:\s*"([\s\S]+?)"\s*,`)
@@ -80,6 +79,12 @@ func Live() {
 						registerID[strings.Join([]string{"斗鱼", l[1], v}, "-")] = result.Data.RoomStatus
 					}
 				}
+			} else {
+				for k := range registerID {
+					if strings.Index(k, strings.Join([]string{"斗鱼", l[1], ""}, "-")) > -1 {
+						registerID[k] = result.Data.RoomStatus
+					}
+				}
 			}
 		case "熊猫":
 			var result struct {
@@ -134,11 +139,17 @@ func Live() {
 						registerID[strings.Join([]string{"熊猫", l[1], v}, "-")] = result.Data.Info.Status
 					}
 				}
+			} else {
+				for k := range registerID {
+					if strings.Index(k, strings.Join([]string{"熊猫", l[1], ""}, "-")) > -1 {
+						registerID[k] = result.Data.Info.Status
+					}
+				}
 			}
 		case "B站":
 			req, err := http.NewRequest("GET", fmt.Sprintf("https://live.bilibili.com/%s", l[1]), nil)
 			if err != nil {
-				log.Error("bilibili", err)
+				log.Error("B站", err)
 				break
 			}
 			req.Header.Set("If-Modified-Since", "0")
@@ -148,7 +159,7 @@ func Live() {
 			req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
 			resp, err := client.Do(req)
 			if err != nil {
-				log.Error("bilibili", err)
+				log.Error("B站", err)
 				break
 			}
 			// 顺序 1 房间号 2 图片 3 名字 4 状态 5 标题
@@ -167,11 +178,11 @@ func Live() {
 					out[3], out[5], out[2]))
 				group, err := memory.GetLive(roomID[i]).Range()
 				if err != nil {
-					log.Error("bilibili", err)
+					log.Error("B站", err)
 				}
 				for _, v := range group {
 					tmp, _ := strconv.ParseInt(v, 10, 64)
-					if registerID[strings.Join([]string{"bilibili", l[1], v}, "-")] != out[4] {
+					if registerID[strings.Join([]string{"B站", l[1], v}, "-")] != out[4] {
 						memory.DefaultMes.Push(
 							message.SendMsg(message.MSG_GROUP, tmp, utils.NewMessage().
 								AddMsg(utils.CQat("all")).
@@ -181,7 +192,13 @@ func Live() {
 						memory.DefaultMes.Push(
 							message.SendMsg(message.MSG_GROUP, tmp, m.Message(), false, ""),
 						)
-						registerID[strings.Join([]string{"bilibili", l[1], v}, "-")] = out[4]
+						registerID[strings.Join([]string{"B站", l[1], v}, "-")] = out[4]
+					}
+				}
+			} else {
+				for k := range registerID {
+					if strings.Index(k, strings.Join([]string{"B站", l[1], ""}, "-")) > -1 {
+						registerID[k] = out[4]
 					}
 				}
 			}
@@ -235,8 +252,15 @@ func Live() {
 						registerID[strings.Join([]string{"huya", l[1], v}, "-")] = out[3]
 					}
 				}
+			} else {
+				for k := range registerID {
+					if strings.Index(k, strings.Join([]string{"huya", l[1], ""}, "-")) > -1 {
+						registerID[k] = out[3]
+					}
+				}
 			}
+		default:
 		}
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(30 * time.Second)
 }
