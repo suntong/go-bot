@@ -75,6 +75,17 @@ func Command(s message.EventJSON) interface{} {
 	return s
 }
 
+// at 状态
 func handleCmd(cmd []string) (int, string) {
-	return 0, ""
+	// 拆解cmd
+	if len(cmd) == 0 {
+		return -1, ""
+	}
+	switch len(cmd) {
+	case 1:
+	case 2:
+	case 3:
+	}
+	// 不存在 原路返回
+	return -1, strings.Join(cmd, " ")
 }
