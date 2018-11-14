@@ -6,6 +6,7 @@ import (
 	"go-bot/pkg/memory"
 	"go-bot/pkg/message"
 	"go-bot/utils"
+	"math/rand"
 	"strconv"
 	"strings"
 
@@ -21,9 +22,28 @@ func Command(s message.EventJSON) interface{} {
 
 	raw := strings.Trim(utils.Fransferred(s.RawMsg), " ")
 	l := strings.Split(raw, " ")
+	code, result := handleCmd(l)
+	if code == -1 {
+		return s
+	}
 
-	if len(l) == 3 && l[0] == "监控直播" && (l[1] == "斗鱼" || l[1] == "熊猫" || l[1] == "B站" || l[1] == "虎牙") {
-		go func(goh message.EventJSON, text string, room string) {
+	switch code {
+	case 1:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+			m.AddMsg(utils.CQtext("点赞成功"))
+			memory.DefaultMes.Push(
+				message.SendLike(j.UserID, 10),
+			)
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 2:
+		go func(j message.EventJSON, text string, room string) {
 			text = strings.Trim(text, " ")
 			tmp, err := strconv.ParseInt(text, 10, 64)
 			if err != nil {
@@ -31,61 +51,100 @@ func Command(s message.EventJSON) interface{} {
 				return
 			}
 			m := utils.NewMessage()
+			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
 			m.AddMsg(utils.CQtext(
 				fmt.Sprintf("监控[%s]频道", fmt.Sprintf("%d", tmp)),
 			))
 			memory.DefaultMes.Push(
-				message.SendMsg(goh.MsgType, goh.GroupID,
+				message.SendMsg(j.MsgType, j.GroupID,
 					m.Message(), false, ""),
 			)
-			memory.GetLive(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")).Push(goh.GroupID)
+			memory.GetLive(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-")).Push(j.GroupID)
 			memory.GetLive("liveRoom").Push(strings.Join([]string{room, fmt.Sprintf("%d", tmp)}, "-"))
-		}(s, l[2], l[1])
+		}(s, result[1], result[0])
+		return nil
+	case 3:
+		go func(j message.EventJSON, text string) {
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+			m.AddMsg(utils.CQBase64record(intelligence.GetRokidAudio(text), false))
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, strings.Join(result, " "))
+		return nil
+	case 4:
+		go func(j message.EventJSON) {
+			t := rand.Intn(300)
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+			m.AddMsg(utils.CQtext(fmt.Sprintf("恭喜您抽中了%d秒！！", t)))
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+			memory.DefaultMes.Push(
+				message.SetGroupBan(j.GroupID, j.UserID, int32(t)),
+			)
+		}(s)
 		return nil
 	}
-
-	if len(l) > 1 {
-		switch l[0] {
-		case "语音":
-			go func(goh message.EventJSON, text string) {
-				m := utils.NewMessage()
-				m.AddMsg(utils.CQat(fmt.Sprint(goh.UserID)))
-				m.AddMsg(utils.CQBase64record(intelligence.GetRokidAudio(text), false))
-				memory.DefaultMes.Push(
-					message.SendMsg(goh.MsgType, goh.GroupID,
-						m.Message(), false, ""),
-				)
-			}(s, strings.Join(l[1:], " "))
-			return nil
-		case "私聊":
-			go func(goh message.EventJSON, text string) {
-				m := utils.NewMessage()
-				m.AddMsg(utils.CQtext(text))
-				memory.DefaultMes.Push(
-					message.SendMsg(message.MSG_PRIVATE, goh.UserID,
-						m.Message(), false, goh.MsgType),
-				)
-			}(s, strings.Join(l[1:], " "))
-			return nil
-		default:
-			return s
-		}
-	}
-
 	return s
 }
 
-// at 状态
-func handleCmd(cmd []string) (int, string) {
+func handleCmd(cmd []string) (int, []string) {
 	// 拆解cmd
 	if len(cmd) == 0 {
-		return -1, ""
+		return -1, nil
 	}
+
+	c := cmd[0]
+	if len(cmd) > 1 {
+		switch c {
+		case "语音":
+			return 3, cmd[1:]
+		}
+	}
+
 	switch len(cmd) {
 	case 1:
+		switch c {
+		case "点赞":
+			return 1, []string{}
+		case "禁言抽奖":
+			return 4, []string{}
+		}
 	case 2:
 	case 3:
+		switch c {
+		case "监控":
+			if supportLive(cmd[1]) {
+				tmp, err := strconv.ParseInt(cmd[2], 10, 64)
+				if err != nil {
+					log.Error("监控", err)
+					return -1, nil
+				}
+				return 2, []string{strings.ToUpper(cmd[1]), fmt.Sprintf("%d", tmp)}
+			}
+		}
 	}
 	// 不存在 原路返回
-	return -1, strings.Join(cmd, " ")
+	return -1, cmd
+}
+
+func supportLive(live string) bool {
+	live = strings.ToUpper(live)
+	switch live {
+	case "斗鱼":
+		fallthrough
+	case "熊猫":
+		fallthrough
+	case "B站":
+		fallthrough
+	case "虎牙":
+		return true
+	default:
+		return false
+	}
 }
