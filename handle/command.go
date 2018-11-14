@@ -79,6 +79,7 @@ func Command(s message.EventJSON) interface{} {
 			t := rand.Intn(300)
 			m := utils.NewMessage()
 			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+			// m.AddMsg(utils.CQimage("https://ws1.sinaimg.cn/large/54d358dbly1fvbwx2kzc7g20e80e8wua.gif"))
 			m.AddMsg(utils.CQtext(fmt.Sprintf("恭喜您抽中了%d秒！！", t)))
 			memory.DefaultMes.Push(
 				message.SendMsg(j.MsgType, j.GroupID,
@@ -86,6 +87,18 @@ func Command(s message.EventJSON) interface{} {
 			)
 			memory.DefaultMes.Push(
 				message.SetGroupBan(j.GroupID, j.UserID, int32(t)),
+			)
+		}(s)
+		return nil
+	case 5:
+		go func(j message.EventJSON) {
+			t := rand.Intn(100)
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+			m.AddMsg(utils.CQtext(fmt.Sprintf("roll中了[%d]点！！", t)))
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
 			)
 		}(s)
 		return nil
@@ -110,8 +123,14 @@ func handleCmd(cmd []string) (int, []string) {
 	switch len(cmd) {
 	case 1:
 		switch c {
+		case "roll":
+			return 5, []string{}
 		case "点赞":
 			return 1, []string{}
+		case "我要自闭":
+			fallthrough
+		case "我禁我自己":
+			fallthrough
 		case "禁言抽奖":
 			return 4, []string{}
 		}
