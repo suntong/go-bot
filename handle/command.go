@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/lexkong/log"
 )
 
@@ -76,7 +78,7 @@ func Command(s message.EventJSON) interface{} {
 		return nil
 	case 4:
 		go func(j message.EventJSON) {
-			t := rand.Intn(300)
+			t := rand.Intn(viper.GetInt("ban_time"))
 			m := utils.NewMessage()
 			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
 			// m.AddMsg(utils.CQimage("https://ws1.sinaimg.cn/large/54d358dbly1fvbwx2kzc7g20e80e8wua.gif"))

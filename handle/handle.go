@@ -27,6 +27,7 @@ func Handle(data []byte) error {
 	if err := json.Unmarshal(data, &e); err != nil {
 		return err
 	}
+	fmt.Println(string(data))
 	if r := load(e,
 		Command); r != nil {
 		h := r.(message.EventJSON)

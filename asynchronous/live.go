@@ -51,7 +51,11 @@ func Live() {
 				log.Error("douyu", err)
 				break
 			}
-			r, _ := ioutil.ReadAll(resp.Body)
+			r, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Error("斗鱼", err)
+				break
+			}
 			resp.Body.Close()
 			json.Unmarshal(r, &result)
 			// 开播
@@ -79,7 +83,7 @@ func Live() {
 						registerID[strings.Join([]string{"斗鱼", l[1], v}, "-")] = result.Data.RoomStatus
 					}
 				}
-			} else {
+			} else if result.Data.RoomStatus != "" {
 				for k := range registerID {
 					if strings.Index(k, strings.Join([]string{"斗鱼", l[1], ""}, "-")) > -1 {
 						registerID[k] = result.Data.RoomStatus
@@ -112,7 +116,11 @@ func Live() {
 				log.Error("xionmao", err)
 				break
 			}
-			r, _ := ioutil.ReadAll(resp.Body)
+			r, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Error("熊猫", err)
+				break
+			}
 			resp.Body.Close()
 			json.Unmarshal(r, &result)
 			// 开播
@@ -139,7 +147,7 @@ func Live() {
 						registerID[strings.Join([]string{"熊猫", l[1], v}, "-")] = result.Data.Info.Status
 					}
 				}
-			} else {
+			} else if result.Data.Info.Status != "" {
 				for k := range registerID {
 					if strings.Index(k, strings.Join([]string{"熊猫", l[1], ""}, "-")) > -1 {
 						registerID[k] = result.Data.Info.Status
@@ -164,7 +172,11 @@ func Live() {
 			}
 			// 顺序 1 房间号 2 图片 3 名字 4 状态 5 标题
 			var out = make([]string, 6)
-			r, _ := ioutil.ReadAll(resp.Body)
+			r, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Error("B站", err)
+				break
+			}
 			for i, match := range blibilire.FindStringSubmatch(string(r)) {
 				out[i] = match
 			}
@@ -195,7 +207,7 @@ func Live() {
 						registerID[strings.Join([]string{"B站", l[1], v}, "-")] = out[4]
 					}
 				}
-			} else {
+			} else if out[4] != "" {
 				for k := range registerID {
 					if strings.Index(k, strings.Join([]string{"B站", l[1], ""}, "-")) > -1 {
 						registerID[k] = out[4]
@@ -252,7 +264,7 @@ func Live() {
 						registerID[strings.Join([]string{"huya", l[1], v}, "-")] = out[3]
 					}
 				}
-			} else {
+			} else if out[3] != "" {
 				for k := range registerID {
 					if strings.Index(k, strings.Join([]string{"huya", l[1], ""}, "-")) > -1 {
 						registerID[k] = out[3]
