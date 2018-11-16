@@ -30,6 +30,7 @@ type sendParams struct {
 	SubType    string      `json:"sub_type"`
 	Reason     string      `json:"reason"`
 	NoCache    bool        `json:"no_cache"`
+	GroupName  string      `json:"group_name"`
 	Anonymous  struct {
 		ID   int64  `json:"id"`
 		Name string `json:"name"`
@@ -145,6 +146,28 @@ func SetGroupWholeBan(groupID int64, enable bool) string {
 	}
 	result, _ := json.Marshal(m)
 	return string(result)
+}
+
+func GetGroupList() string {
+	m := sendJSON{
+		Action: "get_group_list",
+		Params: sendParams{},
+	}
+	result, _ := json.Marshal(m)
+	return string(result)
+
+}
+
+func GetGroupMemberList(group_id int64) string {
+	m := sendJSON{
+		Action: "get_group_member_list",
+		Params: sendParams{
+			GroupID: group_id,
+		},
+	}
+	result, _ := json.Marshal(m)
+	return string(result)
+
 }
 
 type EventJSON struct {

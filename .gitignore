@@ -6,3 +6,4 @@ go-bot
 conf.yaml
 .vscode
 log/
+Makefile

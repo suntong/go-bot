@@ -3,7 +3,6 @@ package intelligence
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"go-bot/utils"
 	"io/ioutil"
 	"net/http"
@@ -61,7 +60,6 @@ func GetTulingChat(reqType int, text, userId, groupId, userIdName string, at boo
 		UserInfo   interface{} `json:"userInfo"`
 	}{ReqType: reqType, Perception: perception, UserInfo: getUserInfo(userId, groupId, userIdName)}
 	jsonBytes, _ := json.Marshal(&result)
-	fmt.Println(string(jsonBytes))
 	resp, err := http.Post("http://openapi.tuling123.com/openapi/api/v2", "application/json", bytes.NewReader(jsonBytes))
 	if err != nil {
 		log.Error("tuling", err)

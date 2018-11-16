@@ -104,6 +104,13 @@ func Command(s message.EventJSON) interface{} {
 			)
 		}(s)
 		return nil
+	case 6:
+		go func(j message.EventJSON) {
+			memory.DefaultMes.Push(
+				message.GetGroupMemberList(j.GroupID),
+			)
+		}(s)
+		return nil
 	}
 	return s
 }
@@ -135,6 +142,8 @@ func handleCmd(cmd []string) (int, []string) {
 			fallthrough
 		case "禁言抽奖":
 			return 4, []string{}
+		case "群信息":
+			return 6, []string{}
 		}
 	case 2:
 	case 3:

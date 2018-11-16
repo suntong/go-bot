@@ -71,5 +71,21 @@ func apiService(addr string) error {
 		}
 		mux.Done()
 	}(c)
+	go func(c *websocket.Conn) {
+		defer c.Close()
+		for {
+			_, b, err := c.ReadMessage()
+			if err != nil {
+				log.Error("read message", err)
+				break
+			}
+			err = handle.Handle(b)
+			if err != nil {
+				log.Error("handle", err)
+				break
+			}
+		}
+		mux.Done()
+	}(c)
 	return nil
 }
