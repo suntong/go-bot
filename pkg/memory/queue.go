@@ -35,3 +35,29 @@ func GetLive(name string) *livequeue {
 // 		db: name,
 // 	}
 // }
+
+type kv struct {
+	db string
+}
+
+func (m *kv) Get(key string) (string, error) {
+	return client.HGet(m.db, key).Result()
+}
+
+func (m *kv) GetKey() ([]string, error) {
+	return client.HKeys(m.db).Result()
+}
+
+func (m *kv) Del(key ...string) (int64, error) {
+	return client.HDel(m.db, key...).Result()
+}
+
+func (m *kv) Set(key string, value string) (bool, error) {
+	return client.HSet(m.db, key, value).Result()
+}
+
+func GetKV(name string) *kv {
+	return &kv{
+		db: name,
+	}
+}

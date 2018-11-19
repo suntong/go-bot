@@ -21,6 +21,7 @@ func load(e message.EventJSON, mw ...func(message.EventJSON) interface{}) interf
 	return r
 }
 
+
 func Handle(data []byte) error {
 	// 返回错误关闭
 	var e message.EventJSON

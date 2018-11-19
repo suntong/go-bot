@@ -25,10 +25,6 @@ func main() {
 	// 开启服务
 	memory.InitRedis()
 
-	go func() {
-		for {
-			asynchronous.Live()
-		}
-	}()
+	asynchronous.Run()
 	service.LoadService(*addr)
 }
