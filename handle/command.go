@@ -124,6 +124,82 @@ func Command(s message.EventJSON) interface{} {
 			)
 		}(s)
 		return nil
+	case 7:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "group", j.GroupID)).GetKey()
+			if err != nil {
+				log.Error("监控列表", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			for i := range result {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n%s", result[i])))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 8:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).GetKey()
+			if err != nil {
+				log.Error("监控列表", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			for i := range result {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n%s", result[i])))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 9:
+		go func(j message.EventJSON, key string) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "group", j.GroupID)).Del(key)
+			if err != nil {
+				log.Error("删除监控", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if result > 0 {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]成功!", key)))
+			} else {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]失败，可能不存在。", key)))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, result[0])
+		return nil
+	case 10:
+		go func(j message.EventJSON, key string) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).Del(key)
+			if err != nil {
+				log.Error("删除监控", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if result > 0 {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]成功!", key)))
+			} else {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]失败，可能不存在。", key)))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, result[0])
+		return nil
 	}
 	return s
 }
@@ -157,8 +233,18 @@ func handleCmd(cmd []string) (int, []string) {
 			return 4, []string{}
 		case "群信息":
 			return 6, []string{}
+		case "监控列表":
+			return 7, []string{}
+		case "私聊监控列表":
+			return 8, []string{}
 		}
 	case 2:
+		switch c {
+		case "删除监控":
+			return 9, []string{cmd[1]}
+		case "删除私聊监控":
+			return 10, []string{cmd[1]}
+		}
 	case 3:
 		switch c {
 		case "私聊监控":
