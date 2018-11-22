@@ -46,7 +46,7 @@ func notification() {
 					)
 				} else {
 					memory.DefaultMes.Push(
-						message.SendMsg(message.MSG_PRIVATE, id, out, false, ""),
+						message.SendMsg(message.MSG_PRIVATE, id, out, false, message.MSG_GROUP),
 					)
 				}
 				db.Set(keys[i], "true")

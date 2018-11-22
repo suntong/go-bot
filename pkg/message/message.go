@@ -60,11 +60,8 @@ func SendMsg(msgType string, id int64, msg interface{}, auto_escape bool, sub st
 			DiscussID:  id,
 			Msg:        msg,
 			AutoEscape: auto_escape,
+			SubType:    sub,
 		},
-	}
-
-	if len(sub) > 0 {
-		m.Params.SubType = sub
 	}
 	result, _ := json.Marshal(m)
 	return string(result)

@@ -21,7 +21,6 @@ func load(e message.EventJSON, mw ...func(message.EventJSON) interface{}) interf
 	return r
 }
 
-
 func Handle(data []byte) error {
 	// 返回错误关闭
 	var e message.EventJSON
@@ -30,6 +29,7 @@ func Handle(data []byte) error {
 	}
 	fmt.Println(string(data))
 	if r := load(e,
+		PrivateCmd,
 		Command); r != nil {
 		h := r.(message.EventJSON)
 		if utils.AtSelf(h.RawMsg, h.Self) && h.MsgType == message.MSG_GROUP {

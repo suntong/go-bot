@@ -15,6 +15,75 @@ import (
 	"github.com/lexkong/log"
 )
 
+func PrivateCmd(s message.EventJSON) interface{} {
+	if s.MsgType != message.MSG_PRIVATE {
+		return s
+	}
+	raw := strings.Trim(utils.Fransferred(s.RawMsg), " ")
+	l := strings.Split(raw, " ")
+	code, result := handleCmd(l)
+	if code == -1 {
+		return s
+	}
+	switch code {
+	case 8:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).GetKey()
+			if err != nil {
+				log.Error("监控列表", err)
+				return
+			}
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("空"))
+			}
+			for i := range result {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("%s\n", result[i])))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(message.MSG_PRIVATE, j.UserID,
+					m.Message(), false, message.MSG_GROUP),
+			)
+		}(s)
+		return nil
+	case 10:
+		go func(j message.EventJSON, key string) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).Del(key)
+			if err != nil {
+				log.Error("删除监控", err)
+				return
+			}
+			if result > 0 {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("删除[%s]成功!\n", key)))
+			} else {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("删除[%s]失败，可能不存在。\n", key)))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.UserID,
+					m.Message(), false, message.MSG_GROUP),
+			)
+		}(s, result[0])
+		return nil
+	case 11:
+		go func(j message.EventJSON, id string, room string) {
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQtext(
+				fmt.Sprintf("监控[%s]频道", id),
+			))
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.UserID,
+					m.Message(), false, message.MSG_GROUP),
+			)
+			memory.GetLive("inform").Push(fmt.Sprintf("%s-%d", "qq", j.UserID))
+			memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).Set(strings.Join([]string{room, id}, "-"), "false")
+			memory.GetLive("liveRoom").Push(strings.Join([]string{room, id}, "-"))
+		}(s, result[1], result[0])
+		return nil
+	}
+	return s
+}
+
 // 通用
 
 func Command(s message.EventJSON) interface{} {
@@ -22,7 +91,7 @@ func Command(s message.EventJSON) interface{} {
 		return s
 	}
 
-	if s.MsgType != "group" {
+	if s.MsgType != message.MSG_GROUP {
 		return s
 	}
 
@@ -49,12 +118,7 @@ func Command(s message.EventJSON) interface{} {
 		}(s)
 		return nil
 	case 2:
-		tmp, err := strconv.ParseInt(result[2], 10, 64)
-		if err != nil {
-			log.Error("监控", err)
-			break
-		}
-		go func(j message.EventJSON, id string, room string, n int) {
+		go func(j message.EventJSON, id string, room string) {
 			m := utils.NewMessage()
 			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
 			m.AddMsg(utils.CQtext(
@@ -64,19 +128,10 @@ func Command(s message.EventJSON) interface{} {
 				message.SendMsg(j.MsgType, j.GroupID,
 					m.Message(), false, ""),
 			)
-			var ids int64
-			var point string
-			if n == 0 {
-				point = "group"
-				ids = j.GroupID
-			} else {
-				point = "qq"
-				ids = j.UserID
-			}
-			memory.GetLive("inform").Push(fmt.Sprintf("%s-%d", point, ids))
-			memory.GetKV(fmt.Sprintf("%s-%d", point, ids)).Set(strings.Join([]string{room, id}, "-"), "false")
+			memory.GetLive("inform").Push(fmt.Sprintf("%s-%d", "group", j.GroupID))
+			memory.GetKV(fmt.Sprintf("%s-%d", "group", j.GroupID)).Set(strings.Join([]string{room, id}, "-"), "false")
 			memory.GetLive("liveRoom").Push(strings.Join([]string{room, id}, "-"))
-		}(s, result[1], result[0], int(tmp))
+		}(s, result[1], result[0])
 		return nil
 	case 3:
 		go func(j message.EventJSON, text string) {
@@ -133,24 +188,9 @@ func Command(s message.EventJSON) interface{} {
 				return
 			}
 			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
-			for i := range result {
-				m.AddMsg(utils.CQtext(fmt.Sprintf("\n%s", result[i])))
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("空"))
 			}
-			memory.DefaultMes.Push(
-				message.SendMsg(j.MsgType, j.GroupID,
-					m.Message(), false, ""),
-			)
-		}(s)
-		return nil
-	case 8:
-		go func(j message.EventJSON) {
-			m := utils.NewMessage()
-			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).GetKey()
-			if err != nil {
-				log.Error("监控列表", err)
-				return
-			}
-			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
 			for i := range result {
 				m.AddMsg(utils.CQtext(fmt.Sprintf("\n%s", result[i])))
 			}
@@ -164,26 +204,6 @@ func Command(s message.EventJSON) interface{} {
 		go func(j message.EventJSON, key string) {
 			m := utils.NewMessage()
 			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "group", j.GroupID)).Del(key)
-			if err != nil {
-				log.Error("删除监控", err)
-				return
-			}
-			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
-			if result > 0 {
-				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]成功!", key)))
-			} else {
-				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]失败，可能不存在。", key)))
-			}
-			memory.DefaultMes.Push(
-				message.SendMsg(j.MsgType, j.GroupID,
-					m.Message(), false, ""),
-			)
-		}(s, result[0])
-		return nil
-	case 10:
-		go func(j message.EventJSON, key string) {
-			m := utils.NewMessage()
-			result, err := memory.GetKV(fmt.Sprintf("%s-%d", "qq", j.UserID)).Del(key)
 			if err != nil {
 				log.Error("删除监控", err)
 				return
@@ -248,7 +268,14 @@ func handleCmd(cmd []string) (int, []string) {
 	case 3:
 		switch c {
 		case "私聊监控":
-			fallthrough
+			if supportLive(cmd[1]) {
+				tmp, err := strconv.ParseInt(cmd[2], 10, 64)
+				if err != nil {
+					log.Error("监控", err)
+					return -1, nil
+				}
+				return 11, []string{strings.ToUpper(cmd[1]), fmt.Sprintf("%d", tmp)}
+			}
 		case "监控":
 			if supportLive(cmd[1]) {
 				tmp, err := strconv.ParseInt(cmd[2], 10, 64)
@@ -256,11 +283,7 @@ func handleCmd(cmd []string) (int, []string) {
 					log.Error("监控", err)
 					return -1, nil
 				}
-				v := 1
-				if cmd[0] == "监控" {
-					v = 0
-				}
-				return 2, []string{strings.ToUpper(cmd[1]), fmt.Sprintf("%d", tmp), fmt.Sprintf("%d", v)}
+				return 2, []string{strings.ToUpper(cmd[1]), fmt.Sprintf("%d", tmp)}
 			}
 		}
 	}
