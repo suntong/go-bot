@@ -36,9 +36,11 @@ func PrivateCmd(s message.EventJSON) interface{} {
 			}
 			if len(result) == 0 {
 				m.AddMsg(utils.CQtext("空"))
+			} else {
+				m.AddMsg(utils.CQtext("监控列表"))
 			}
 			for i := range result {
-				m.AddMsg(utils.CQtext(fmt.Sprintf("%s\n", result[i])))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n%s", result[i])))
 			}
 			memory.DefaultMes.Push(
 				message.SendMsg(message.MSG_PRIVATE, j.UserID,
@@ -55,9 +57,9 @@ func PrivateCmd(s message.EventJSON) interface{} {
 				return
 			}
 			if result > 0 {
-				m.AddMsg(utils.CQtext(fmt.Sprintf("删除[%s]成功!\n", key)))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("删除[%s]成功!", key)))
 			} else {
-				m.AddMsg(utils.CQtext(fmt.Sprintf("删除[%s]失败，可能不存在。\n", key)))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("删除[%s]失败，可能不存在。", key)))
 			}
 			memory.DefaultMes.Push(
 				message.SendMsg(j.MsgType, j.UserID,

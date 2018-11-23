@@ -72,6 +72,8 @@ func cyclic() {
 			out = xionmaoOnline(item[1])
 		case "虎牙":
 			out = huyaOnline(item[1])
+		case "B站":
+			out = bilibiliOnline(item[1])
 		}
 		if err, ok := out.(error); ok {
 			log.Error("cyclic", err)
