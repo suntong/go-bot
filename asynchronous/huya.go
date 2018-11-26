@@ -33,6 +33,11 @@ func huyaOnline(addr string) interface{} {
 		log.Error("虎牙", err)
 		return err
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		return errors.New("network error")
+	}
+
 	// 顺序 1 图片 2 title 3 状态 4 主播id 5 名字
 	var out = make([]string, 6)
 	r, _ := ioutil.ReadAll(resp.Body)
@@ -47,8 +52,7 @@ func huyaOnline(addr string) interface{} {
 		m.AddMsg(utils.CQshare(fmt.Sprintf("http://www.huya.com/%s", roomid),
 			out[5], out[2], out[1]))
 		return m.Message()
-	} else if out[3] != "" {
+	} else {
 		return nil
 	}
-	return errors.New("network error")
 }
