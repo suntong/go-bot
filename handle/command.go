@@ -233,6 +233,8 @@ func Command(s message.EventJSON) interface{} {
 			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
 			if result > 0 {
 				m.AddMsg(utils.CQtext("报名成功"))
+			} else {
+				m.AddMsg(utils.CQtext("你已经报名了"))
 			}
 			memory.DefaultMes.Push(
 				message.SendMsg(j.MsgType, j.GroupID,
@@ -256,7 +258,7 @@ func Command(s message.EventJSON) interface{} {
 					log.Error("抽奖", err)
 					return
 				}
-				m.AddMsg(utils.CQtext("恭喜")).AddMsg(utils.CQat(result[n])).AddMsg(utils.CQtext("获奖"))
+				m.AddMsg(utils.CQtext("恭喜")).AddMsg(utils.CQat(result[n])).AddMsg(utils.CQtext(fmt.Sprintf("[%s]获奖", result[n])))
 			}
 			memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Close()
 			memory.DefaultMes.Push(
@@ -280,7 +282,7 @@ func Command(s message.EventJSON) interface{} {
 			if len(result) == 0 {
 				m.AddMsg(utils.CQtext("抽奖池为空"))
 			} else {
-				m.AddMsg(utils.CQtext("抽奖列表"))
+				m.AddMsg(utils.CQtext("抽奖列表")).AddMsg(utils.CQtext(fmt.Sprintf("(%d/%d)", tmp, len(result))))
 			}
 			for len(result) > 0 && tmp > 0 {
 				n := rand.Intn(len(result))
@@ -288,13 +290,20 @@ func Command(s message.EventJSON) interface{} {
 					log.Error("抽奖", err)
 					return
 				}
-				m.AddMsg(utils.CQtext("\n恭喜")).AddMsg(utils.CQat(result[n])).AddMsg(utils.CQtext("获奖"))
+				m.AddMsg(utils.CQtext("\n恭喜")).AddMsg(utils.CQat(result[n])).AddMsg(utils.CQtext(fmt.Sprintf("[%s]获奖", result[n])))
 				if n < len(result)-1 {
 					result = append(result[:n], result[n+1:]...)
 				} else {
 					result = result[:n]
 				}
 				tmp--
+			}
+
+			if len(result) > 0 && len(result) < 10 {
+				m.AddMsg(utils.CQtext("\n未中奖名单"))
+				for _, v := range result {
+					m.AddMsg(utils.CQtext("\n")).AddMsg(utils.CQat(v)).AddMsg(utils.CQtext(fmt.Sprintf("[%s]", v)))
+				}
 			}
 			memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Close()
 			memory.DefaultMes.Push(
@@ -314,7 +323,7 @@ func Command(s message.EventJSON) interface{} {
 			if len(result) == 0 {
 				m.AddMsg(utils.CQtext("空"))
 			} else {
-				m.AddMsg(utils.CQtext("抽奖列表"))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("抽奖列表(%d)", len(result))))
 			}
 			for i := range result {
 				m.AddMsg(utils.CQtext("\n")).AddMsg(utils.CQat(result[i]))
