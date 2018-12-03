@@ -76,7 +76,7 @@ func cyclic() {
 			out = bilibiliOnline(item[1])
 		}
 		if err, ok := out.(error); ok {
-			log.Error("cyclic", err)
+			log.Errorf(err, "cyclic:%s[%s]", item[0], item[1])
 			continue
 		}
 		if out != nil {
