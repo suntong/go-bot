@@ -12,6 +12,10 @@ func (m *livequeue) Range() ([]string, error) {
 	return client.SMembers(m.db).Result()
 }
 
+func (m *livequeue) Close() (int64, error) {
+	return client.Del(m.db).Result()
+}
+
 func GetLive(name string) *livequeue {
 	return &livequeue{
 		db: name,

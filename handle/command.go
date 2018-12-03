@@ -222,7 +222,111 @@ func Command(s message.EventJSON) interface{} {
 			)
 		}(s, result[0])
 		return nil
+	case 12:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Push(j.UserID)
+			if err != nil {
+				log.Error("抽奖", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if result > 0 {
+				m.AddMsg(utils.CQtext("报名成功"))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 13:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Range()
+			if err != nil {
+				log.Error("抽奖", err)
+				return
+			}
+			if len(result) == 0 {
+				m.AddMsg("报名人数为空")
+			} else {
+				n := rand.Intn(len(result))
+				if err != nil {
+					log.Error("抽奖", err)
+					return
+				}
+				m.AddMsg(utils.CQtext("恭喜")).AddMsg(utils.CQat(result[n])).AddMsg(utils.CQtext("获奖"))
+			}
+			memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Close()
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 14:
+		go func(j message.EventJSON, ns string) {
+			tmp, err := strconv.ParseInt(ns, 10, 64)
+			if err != nil {
+				log.Error("抽奖", err)
+			}
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Range()
+			if err != nil {
+				log.Error("抽奖", err)
+				return
+			}
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("抽奖池为空"))
+			} else {
+				m.AddMsg(utils.CQtext("抽奖列表"))
+			}
+			for len(result) > 0 && tmp > 0 {
+				n := rand.Intn(len(result))
+				if err != nil {
+					log.Error("抽奖", err)
+					return
+				}
+				m.AddMsg(utils.CQtext("\n恭喜")).AddMsg(utils.CQat(result[n])).AddMsg(utils.CQtext("获奖"))
+				if n < len(result)-1 {
+					result = append(result[:n], result[n+1:]...)
+				} else {
+					result = result[:n]
+				}
+				tmp--
+			}
+			memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Close()
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, result[0])
+		return nil
+	case 15:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Range()
+			if err != nil {
+				log.Error("抽奖列表", err)
+				return
+			}
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("空"))
+			} else {
+				m.AddMsg(utils.CQtext("抽奖列表"))
+			}
+			for i := range result {
+				m.AddMsg(utils.CQtext("\n")).AddMsg(utils.CQat(result[i]))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
 	}
+
 	return s
 }
 
@@ -259,6 +363,12 @@ func handleCmd(cmd []string) (int, []string) {
 			return 7, []string{}
 		case "私聊监控列表":
 			return 8, []string{}
+		case "抽奖报名":
+			return 12, []string{}
+		case "单人抽奖":
+			return 13, []string{}
+		case "抽奖列表":
+			return 15, []string{}
 		}
 	case 2:
 		switch c {
@@ -266,6 +376,13 @@ func handleCmd(cmd []string) (int, []string) {
 			return 9, []string{cmd[1]}
 		case "删除私聊监控":
 			return 10, []string{cmd[1]}
+		case "多人抽奖":
+			tmp, err := strconv.ParseInt(cmd[1], 10, 64)
+			if err != nil {
+				log.Error("多人抽奖", err)
+				return -1, nil
+			}
+			return 14, []string{fmt.Sprint(tmp)}
 		}
 	case 3:
 		switch c {
