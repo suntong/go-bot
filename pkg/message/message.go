@@ -50,21 +50,53 @@ func String2Interface(message string) interface{} {
 	return result
 }
 
-func SendMsg(msgType string, id int64, msg interface{}, auto_escape bool, sub string) string {
-	m := sendJSON{
-		Action: "send_msg",
-		Params: sendParams{
-			MsgType:    msgType,
-			UserID:     id,
-			GroupID:    id,
-			DiscussID:  id,
-			Msg:        msg,
-			AutoEscape: auto_escape,
-			SubType:    sub,
-		},
+func SendMsg(msgType string, id int64, msg interface{}, auto_escape bool, sub string) []string {
+	result := make([]string, 0)
+	if value, ok := msg.([]interface{}); ok {
+		l := len(value)
+		step := 30
+		i := 0
+		j := 0
+		out := true
+		for ; out && i < l; i += step {
+			j = i + step
+			if j >= l {
+				j = l
+				out = false
+			}
+
+			m := sendJSON{
+				Action: "send_msg",
+				Params: sendParams{
+					MsgType:    msgType,
+					UserID:     id,
+					GroupID:    id,
+					DiscussID:  id,
+					Msg:        value[i:j],
+					AutoEscape: auto_escape,
+					SubType:    sub,
+				},
+			}
+			tmp, _ := json.Marshal(m)
+			result = append(result, string(tmp))
+		}
+	} else {
+		m := sendJSON{
+			Action: "send_msg",
+			Params: sendParams{
+				MsgType:    msgType,
+				UserID:     id,
+				GroupID:    id,
+				DiscussID:  id,
+				Msg:        msg,
+				AutoEscape: auto_escape,
+				SubType:    sub,
+			},
+		}
+		tmp, _ := json.Marshal(m)
+		result = append(result, string(tmp))
 	}
-	result, _ := json.Marshal(m)
-	return string(result)
+	return result
 }
 
 func DeleteMsg(msgID int32) string {

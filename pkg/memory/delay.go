@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"fmt"
+
 	"github.com/spf13/viper"
 )
 
@@ -9,6 +11,18 @@ type delayqueue struct {
 }
 
 func (d *delayqueue) Push(data interface{}) (int64, error) {
+	fmt.Println(data)
+	value, ok := data.([]interface{})
+	if ok {
+		var err error
+		for i := range value {
+			_, err = client.RPush(d.db, value[i]).Result()
+		}
+		if err != nil {
+			return 0, err
+		}
+		return 1, nil
+	}
 	return client.RPush(d.db, data).Result()
 }
 

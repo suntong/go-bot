@@ -279,10 +279,11 @@ func Command(s message.EventJSON) interface{} {
 				log.Error("抽奖", err)
 				return
 			}
+			all := len(result)
 			if len(result) == 0 {
 				m.AddMsg(utils.CQtext("抽奖池为空"))
 			} else {
-				m.AddMsg(utils.CQtext("抽奖列表")).AddMsg(utils.CQtext(fmt.Sprintf("(%d/%d)", tmp, len(result))))
+				m.AddMsg(utils.CQtext("抽奖列表")).AddMsg(utils.CQtext(fmt.Sprintf("(%d/%d)", tmp, all)))
 			}
 			for len(result) > 0 && tmp > 0 {
 				n := rand.Intn(len(result))
@@ -300,7 +301,7 @@ func Command(s message.EventJSON) interface{} {
 			}
 
 			if len(result) > 0 && len(result) < 10 {
-				m.AddMsg(utils.CQtext("\n未中奖名单"))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n\n未中奖名单 (%d/%d)", len(result), all)))
 				for _, v := range result {
 					m.AddMsg(utils.CQtext("\n")).AddMsg(utils.CQat(v)).AddMsg(utils.CQtext(fmt.Sprintf("[%s]", v)))
 				}
