@@ -335,6 +335,26 @@ func Command(s message.EventJSON) interface{} {
 			)
 		}(s)
 		return nil
+	case 16:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "draw", j.GroupID)).Range()
+			if err != nil {
+				log.Error("抽奖池人数", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("抽奖池为空"))
+			} else {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("当前抽奖池人数为 (%d)", len(result))))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
 	}
 
 	return s
@@ -377,8 +397,10 @@ func handleCmd(cmd []string) (int, []string) {
 			return 12, []string{}
 		case "单人抽奖":
 			return 13, []string{}
-		case "抽奖列表":
+		case "抽奖池列表":
 			return 15, []string{}
+		case "抽奖池人数":
+			return 16, []string{}
 		}
 	case 2:
 		switch c {
