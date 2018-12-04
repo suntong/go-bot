@@ -17,7 +17,7 @@ func douyuOnline(addr string) interface{} {
 			Roomid     string `json:"room_id"`
 			RoomName   string `json:"room_name"`
 			RoomStatus string `json:"room_status"`
-			Avatar     string `json:"avatar"`
+			Thumb      string `json:"room_thumb"`
 			Owner      string `json:"owner_name"`
 		} `json:"data"`
 	}
@@ -45,7 +45,7 @@ func douyuOnline(addr string) interface{} {
 	if result.Data.RoomStatus == "1" {
 		m := utils.NewMessage()
 		m.AddMsg(utils.CQshare(fmt.Sprintf("https://www.douyu.com/%s", result.Data.Roomid),
-			result.Data.Owner, result.Data.RoomName, result.Data.Avatar))
+			result.Data.Owner, result.Data.RoomName, result.Data.Thumb))
 		return m.Message()
 	} else if result.Data.RoomStatus != "" {
 		return nil
