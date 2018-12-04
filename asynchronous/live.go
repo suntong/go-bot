@@ -75,8 +75,7 @@ func cyclic() {
 		case "B站":
 			out = bilibiliOnline(item[1])
 		}
-		if err, ok := out.(error); ok {
-			log.Errorf(err, "cyclic:%s[%s]", item[0], item[1])
+		if _, ok := out.(error); ok {
 			continue
 		}
 		if out != nil {
