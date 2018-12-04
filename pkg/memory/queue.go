@@ -8,6 +8,10 @@ func (m *livequeue) Push(data interface{}) (int64, error) {
 	return client.SAdd(m.db, data).Result()
 }
 
+func (m *livequeue) PushTime(data interface{}) (int64, error) {
+	return client.SAdd(m.db, data).Result()
+}
+
 func (m *livequeue) Range() ([]string, error) {
 	return client.SMembers(m.db).Result()
 }
