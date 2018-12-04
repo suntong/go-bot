@@ -12,7 +12,7 @@ import (
 	"github.com/lexkong/log"
 )
 
-var huyaRE = regexp.MustCompile(`(?m)picURL\s*=\s*'(.+?)'\s*[\s\S]+?liveRoomName\s*=\s*'(.+?)'\s*;[\s\S]+?ISLIVE\s*=\s*([a-z]+)\s*;[\s\S]+?TOPSID\s*=\s*'(.+?)'\s*;[\s\S]+?ANTHOR_NICK\s*=\s*'(.+?)'\s*;`)
+var huyaRE = regexp.MustCompile(`(?m)img\s*class\s*=\s*"\s*pic-con\s*[",']\s*src\s*=\s*[",'](.+?)[",']\s*[\s\S]+?liveRoomName\s*=\s*[",'](.+?)[",']\s*;[\s\S]+?ISLIVE\s*=\s*([a-z]+)\s*;[\s\S]+?TOPSID\s*=\s*[",'](.+?)[",']\s*;[\s\S]+?ANTHOR_NICK\s*=\s*'(.+?)[",']\s*;`)
 
 func huyaOnline(addr string) interface{} {
 	roomid := addr[strings.Index(addr, "-")+1:]

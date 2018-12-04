@@ -15,13 +15,15 @@ func xionmaoOnline(addr string) interface{} {
 	var result struct {
 		Data struct {
 			Info struct {
-				ID     string `json:"id"`
-				Name   string `json:"name"`
-				Status string `json:"status"`
+				ID       string `json:"id"`
+				Name     string `json:"name"`
+				Status   string `json:"status"`
+				Pictures struct {
+					Img string `json:"cover_img"`
+				} `json:"pictures"`
 			} `json:"roominfo"`
 			User struct {
-				Name   string `json:"name"`
-				Avatar string `json:"avatar"`
+				Name string `json:"name"`
 			} `json:"hostinfo"`
 		} `json:"data"`
 	}
@@ -48,7 +50,7 @@ func xionmaoOnline(addr string) interface{} {
 	if result.Data.Info.Status == "2" {
 		m := utils.NewMessage()
 		m.AddMsg(utils.CQshare(fmt.Sprintf("http://www.panda.tv/%s", result.Data.Info.ID),
-			result.Data.User.Name, result.Data.Info.Name, result.Data.User.Avatar))
+			result.Data.User.Name, result.Data.Info.Name, result.Data.Info.Pictures.Img))
 		return m.Message()
 	} else if result.Data.Info.Status != "" {
 		return nil
