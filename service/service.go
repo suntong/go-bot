@@ -2,18 +2,18 @@ package service
 
 import (
 	"go-bot/handle"
+	"net/http"
 	"net/url"
 	"sync"
 
-	"github.com/lexkong/log"
-
 	"github.com/gorilla/websocket"
+	"github.com/lexkong/log"
 )
 
 var mux sync.WaitGroup
 
 func LoadService(addr string) {
-	mux.Add(2)
+	mux.Add(3)
 	if err := eventService(addr); err != nil {
 		log.Error("service", err)
 	}
@@ -21,8 +21,19 @@ func LoadService(addr string) {
 	if err := apiService(addr); err != nil {
 		log.Error("service", err)
 	}
+	if err := inputService(); err != nil {
+		log.Error("service", err)
+	}
 
 	mux.Wait()
+}
+
+func inputService() error {
+	http.HandleFunc("/monitoring", func(w http.ResponseWriter, r *http.Request) {
+		log.Infof("option=[%s] ip=[%s] path=[%s] body=[%s] parm=[%s] header=[%s]", r.Method, r.RemoteAddr, r.RequestURI, r.Body, r.PostForm, r.Header)
+		w.WriteHeader(http.StatusOK)
+	})
+	return http.ListenAndServe(":3721", nil)
 }
 
 func eventService(addr string) error {
