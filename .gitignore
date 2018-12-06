@@ -7,3 +7,4 @@ conf.yaml
 .vscode
 log/
 Makefile
+get_ip.py

@@ -355,6 +355,63 @@ func Command(s message.EventJSON) interface{} {
 			)
 		}(s)
 		return nil
+	case 17:
+		go func(j message.EventJSON, room string) {
+			m := utils.NewMessage()
+			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+			m.AddMsg(utils.CQtext(
+				fmt.Sprintf("开服通知[%s]", room),
+			))
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+			memory.GetLive("inform").Push(fmt.Sprintf("%s-%d", "group", j.GroupID))
+			memory.GetKV(fmt.Sprintf("%s-%dserver", "group", j.GroupID)).Set(room, "false")
+			memory.GetLive("server").Push(room)
+		}(s, result[0])
+		return nil
+	case 18:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%dserver", "group", j.GroupID)).GetKey()
+			if err != nil {
+				log.Error("开服列表", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("空"))
+			}
+			for i := range result {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n%s", result[i])))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 19:
+		go func(j message.EventJSON, key string) {
+			m := utils.NewMessage()
+			result, err := memory.GetKV(fmt.Sprintf("%s-%dserver", "group", j.GroupID)).Del(key)
+			if err != nil {
+				log.Error("删除开服", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if result > 0 {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]成功!", key)))
+			} else {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]失败，可能不存在。", key)))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, result[0])
+		return nil
 	}
 
 	return s
@@ -401,11 +458,18 @@ func handleCmd(cmd []string) (int, []string) {
 			return 15, []string{}
 		case "抽奖池人数":
 			return 16, []string{}
+		case "开服通知列表":
+			return 18, []string{}
 		}
 	case 2:
 		switch c {
+		case "开服通知":
+			// TODO 缩略词
+			return 17, []string{cmd[1]}
 		case "删除监控":
 			return 9, []string{cmd[1]}
+		case "删除开服通知":
+			return 19, []string{cmd[1]}
 		case "删除私聊监控":
 			return 10, []string{cmd[1]}
 		case "多人抽奖":

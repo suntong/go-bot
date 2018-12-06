@@ -1,6 +1,7 @@
 package asynchronous
 
 import (
+	"fmt"
 	"go-bot/pkg/memory"
 	"go-bot/pkg/message"
 	"strconv"
@@ -15,11 +16,11 @@ var (
 	registerID = sync.Map{}
 )
 
-func notification() {
-	sometion, _ := memory.GetLive("inform").Range()
+func notification(name, noType string) {
+	sometion, _ := memory.GetLive(name).Range()
 	for i := range sometion {
 		item := sometion[i]
-		db := memory.GetKV(item)
+		db := memory.GetKV(fmt.Sprintf("%s%s", item, noType))
 		keys, _ := db.GetKey()
 		for i := range keys {
 			result, _ := db.Get(keys[i])
@@ -58,10 +59,12 @@ func notification() {
 }
 
 func cyclic() {
+	Jw3Server()
 	roomID, err := memory.GetLive("liveRoom").Range()
 	if err != nil {
 		log.Fatal("cyclic", err)
 	}
+
 	for i := range roomID {
 		item := strings.Split(roomID[i], "-")
 		var out interface{}
@@ -80,9 +83,22 @@ func cyclic() {
 		}
 		if out != nil {
 			registerID.Store(roomID[i], out)
-			notification()
+			notification("inform", "")
 		} else {
 			registerID.Store(roomID[i], nil)
+		}
+	}
+	server, err := memory.GetLive("server").Range()
+	if err != nil {
+		log.Fatal("cyclic", err)
+	}
+	for i := range server {
+		out := IsOnline(server[i])
+		if out != nil {
+			registerID.Store(server[i], out)
+			notification("inform", "server")
+		} else {
+			registerID.Store(server[i], nil)
 		}
 	}
 }
