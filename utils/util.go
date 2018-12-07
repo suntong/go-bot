@@ -4,7 +4,12 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"strings"
+
+	"github.com/lexkong/log"
 )
 
 func NewMessage() *message {
@@ -276,4 +281,27 @@ func AtSelf(raw string, self int64) bool {
 		return true
 	}
 	return false
+}
+
+func CQImageUrlBytes(urlPath string) []byte {
+	req, err := http.NewRequest("GET", urlPath, nil)
+	if err != nil {
+		log.Error("image", err)
+		return []byte{}
+	}
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		log.Error("image", err)
+		return []byte{}
+	}
+
+	voiceBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Error("image", err)
+		return []byte{}
+	}
+	str := string(voiceBytes)
+	str, _ = url.PathUnescape(str)
+	data, _ := base64.StdEncoding.DecodeString(str)
+	return data
 }

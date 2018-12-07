@@ -90,7 +90,6 @@ func PrivateCmd(s message.EventJSON) interface{} {
 				log.Error("开服列表", err)
 				return
 			}
-			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
 			if len(result) == 0 {
 				m.AddMsg(utils.CQtext("空"))
 			}
@@ -106,7 +105,6 @@ func PrivateCmd(s message.EventJSON) interface{} {
 	case 21:
 		go func(j message.EventJSON, room string) {
 			m := utils.NewMessage()
-			m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
 			m.AddMsg(utils.CQtext(
 				fmt.Sprintf("开服通知[%s]", room),
 			))
@@ -127,7 +125,6 @@ func PrivateCmd(s message.EventJSON) interface{} {
 				log.Error("删除开服", err)
 				return
 			}
-			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
 			if result > 0 {
 				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]成功!", key)))
 			} else {

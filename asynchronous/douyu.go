@@ -44,8 +44,10 @@ func douyuOnline(addr string) interface{} {
 	// 开播
 	if result.Data.RoomStatus == "1" {
 		m := utils.NewMessage()
-		m.AddMsg(utils.CQshare(fmt.Sprintf("https://www.douyu.com/%s", result.Data.Roomid),
-			result.Data.Owner, result.Data.RoomName, result.Data.Thumb))
+		m.AddMsg(utils.CQimage(result.Data.Thumb))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】开播了", result.Data.Owner)))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("%s", result.Data.RoomName)))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("\n直播间地址：【%s】", fmt.Sprintf("https://www.douyu.com/%s", result.Data.Roomid))))
 		return m.Message()
 	} else if result.Data.RoomStatus != "" {
 		return nil

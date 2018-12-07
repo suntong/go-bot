@@ -49,8 +49,10 @@ func huyaOnline(addr string) interface{} {
 	// 开播
 	if out[3] == "true" {
 		m := utils.NewMessage()
-		m.AddMsg(utils.CQshare(fmt.Sprintf("http://www.huya.com/%s", roomid),
-			out[5], out[2], out[1]))
+		m.AddMsg(utils.CQimage(out[1]))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】开播了", out[5])))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("%s", out[2])))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("\n直播间地址：【%s】", fmt.Sprintf("http://www.huya.com/%s", roomid))))
 		return m.Message()
 	} else {
 		return nil
