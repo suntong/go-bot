@@ -2,6 +2,7 @@ package service
 
 import (
 	"go-bot/handle"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sync"
@@ -30,10 +31,12 @@ func LoadService(addr string) {
 
 func inputService() error {
 	http.HandleFunc("/monitoring", func(w http.ResponseWriter, r *http.Request) {
-		log.Infof("option=[%s] ip=[%s] path=[%s] body=[%s] parm=[%s] header=[%s]", r.Method, r.RemoteAddr, r.RequestURI, r.Body, r.PostForm, r.Header)
+		bytes, _ := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+		log.Infof("option=[%s] ip=[%s] path=[%s] body=[%s] parm=[%s] header=[%s]", r.Method, r.RemoteAddr, r.RequestURI, string(bytes), r.PostForm, r.Header)
 		w.WriteHeader(http.StatusOK)
 	})
-	return http.ListenAndServe(":3721", nil)
+	return http.ListenAndServeTLS(":443", "server.crt", "server.key", nil)
 }
 
 func eventService(addr string) error {

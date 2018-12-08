@@ -8,3 +8,5 @@ conf.yaml
 log/
 Makefile
 get_ip.py
+*.crt
+*.key

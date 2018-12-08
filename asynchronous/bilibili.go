@@ -44,8 +44,8 @@ func bilibiliOnline(addr string) interface{} {
 	// 开播
 	if result.Data.RoomStatus == "LIVE" {
 		m := utils.NewMessage()
-		m.AddMsg(utils.CQimage(result.Data.Avatar))
-		m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】开播了", result.Data.Owner)))
+		// m.AddMsg(utils.CQimage(result.Data.Avatar))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("【%s】开播了\n", result.Data.Owner)))
 		m.AddMsg(utils.CQtext(fmt.Sprintf("%s", result.Data.RoomName)))
 		m.AddMsg(utils.CQtext(fmt.Sprintf("\n直播间地址：【%s】", fmt.Sprintf("https://live.bilibili.com/%d", result.Data.Roomid))))
 

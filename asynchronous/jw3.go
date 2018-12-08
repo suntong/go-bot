@@ -82,8 +82,8 @@ func IsOnline(name string) interface{} {
 		if outTmp[0] == "true" {
 			// 当前开服
 			m := utils.NewMessage()
-			m.AddMsg(utils.CQimage("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544692640&di=442ab4434e7b703ec890b582c231670f&imgtype=jpg&er=1&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201709%2F14%2F20170914233246_FZJHA.jpeg"))
-			m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】开服了\n", name)))
+			// m.AddMsg(utils.CQimage("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544692640&di=442ab4434e7b703ec890b582c231670f&imgtype=jpg&er=1&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201709%2F14%2F20170914233246_FZJHA.jpeg"))
+			m.AddMsg(utils.CQtext(fmt.Sprintf("【%s】开服了\n", name)))
 			m.AddMsg(utils.CQtext(fmt.Sprintf("%s-%s", outTmp[1], name)))
 			return m.Message()
 		}

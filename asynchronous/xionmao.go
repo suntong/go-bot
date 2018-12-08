@@ -49,8 +49,8 @@ func xionmaoOnline(addr string) interface{} {
 	// 开播
 	if result.Data.Info.Status == "2" {
 		m := utils.NewMessage()
-		m.AddMsg(utils.CQimage(result.Data.Info.Pictures.Img))
-		m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】开播了", result.Data.User.Name)))
+		// m.AddMsg(utils.CQimage(result.Data.Info.Pictures.Img))
+		m.AddMsg(utils.CQtext(fmt.Sprintf("【%s】开播了\n", result.Data.User.Name)))
 		m.AddMsg(utils.CQtext(fmt.Sprintf("%s", result.Data.Info.Name)))
 		m.AddMsg(utils.CQtext(fmt.Sprintf("http://www.panda.tv/%s", result.Data.Info.ID)))
 		return m.Message()
