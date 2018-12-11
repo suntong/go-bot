@@ -69,7 +69,9 @@ func Jw3Server() {
 	}
 	for i := range reJSON.Data {
 		tmp := []string{fmt.Sprint(reJSON.Data[i].State), reJSON.Data[i].Zone, reJSON.Data[i].MainName}
-		serverState.Store(reJSON.Data[i].ServerName, tmp)
+		if tmp[0] == "true" || tmp[0] == "false" {
+			serverState.Store(reJSON.Data[i].ServerName, tmp)
+		}
 	}
 }
 
