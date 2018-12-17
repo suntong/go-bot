@@ -75,6 +75,7 @@ func Jw3Server() {
 			if out, ok := serverState.Load(reJSON.Data[i].ServerName); ok {
 				outTmp, ok := out.(int)
 				if !ok {
+					serverState.Store(reJSON.Data[i].ServerName, 0)
 					break
 				}
 				if outTmp >= 3 {
