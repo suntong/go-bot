@@ -34,6 +34,10 @@ func notification(name, noType string) {
 				continue
 			}
 
+			if _, ok = out.(int); ok {
+				continue
+			}
+
 			if out != nil && result == "false" {
 				tmp := strings.Index(item, "-")
 				id, err := strconv.ParseInt(item[tmp+1:], 10, 64)

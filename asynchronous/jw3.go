@@ -69,8 +69,21 @@ func Jw3Server() {
 	}
 	for i := range reJSON.Data {
 		tmp := []string{fmt.Sprint(reJSON.Data[i].State), reJSON.Data[i].Zone, reJSON.Data[i].MainName}
-		if tmp[0] == "true" || tmp[0] == "false" {
+		if tmp[0] == "true" {
 			serverState.Store(reJSON.Data[i].ServerName, tmp)
+		} else if tmp[0] == "false" {
+			if out, ok := serverState.Load(reJSON.Data[i].ServerName); ok {
+				outTmp, ok := out.(int)
+				if !ok {
+					break
+				}
+				if outTmp >= 3 {
+					serverState.Store(reJSON.Data[i].ServerName, nil)
+				} else {
+					serverState.Store(reJSON.Data[i].ServerName, outTmp+1)
+				}
+			}
+
 		}
 	}
 }
@@ -79,7 +92,7 @@ func IsOnline(name string) interface{} {
 	if out, ok := serverState.Load(name); ok {
 		outTmp, ok := out.([]string)
 		if !ok {
-			return nil
+			return outTmp
 		}
 		if outTmp[0] == "true" {
 			// 当前开服
