@@ -1,5 +1,10 @@
 package memory
 
+import (
+	"errors"
+	"time"
+)
+
 type livequeue struct {
 	db string
 }
@@ -8,8 +13,8 @@ func (m *livequeue) Push(data interface{}) (int64, error) {
 	return client.SAdd(m.db, data).Result()
 }
 
-func (m *livequeue) PushTime(data interface{}) (int64, error) {
-	return client.SAdd(m.db, data).Result()
+func (m *livequeue) Delete(key interface{}) (int64, error) {
+	return client.LRem(m.db, 0, key).Result()
 }
 
 func (m *livequeue) Range() ([]string, error) {
@@ -24,6 +29,23 @@ func GetLive(name string) *livequeue {
 	return &livequeue{
 		db: name,
 	}
+}
+
+func SetKeyValueOver(key, values string, t time.Duration) bool {
+	b, _ := client.SetNX(key, values, t).Result()
+	return b
+}
+
+func GetKeyValueOver(key string) (string, error) {
+	if i, _ := client.Exists(key).Result(); i > 0 {
+		return client.Get(key).Result()
+	} else {
+		return "", errors.New("not exists")
+	}
+}
+
+func DeleteKey(key string) (int64, error) {
+	return client.Del(key).Result()
 }
 
 // type liveKV struct {

@@ -9,8 +9,10 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
+	"github.com/teris-io/shortid"
 
 	"github.com/lexkong/log"
 )
@@ -466,6 +468,109 @@ func Command(s message.EventJSON) interface{} {
 			)
 		}(s, result[0])
 		return nil
+	case 23:
+		go func(j message.EventJSON, text string) {
+			uid, err := shortid.Generate()
+			if err != nil {
+				log.Error("can't create uuid", err)
+			}
+			text = fmt.Sprintf("昵称【%s】\nQQ【%d】\n【%s】", j.Sender.Nick, j.UserID, text)
+			// 往群招募加一条，再往个人招募加一条
+			result := memory.GetLive(fmt.Sprintf("%s-%d", "group-linshi", j.GroupID))
+			result.Push(uid)
+			result = memory.GetLive(fmt.Sprintf("%s-%d", "qq-linshi", j.UserID))
+			result.Push(uid)
+			m := utils.NewMessage()
+			// 设置 对应的用户
+			if memory.SetKeyValueOver(uid, text, 24*time.Hour) {
+				m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("添加招募成功\n")))
+			} else {
+				m.AddMsg(utils.CQat(fmt.Sprint(j.UserID)))
+				m.AddMsg(utils.CQtext(fmt.Sprintf("添加招募失败\n")))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, strings.Join(result, " "))
+		return nil
+	case 24:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "group-linshi", j.GroupID)).Range()
+			if err != nil {
+				log.Error("招募列表", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			for i, _ := range result {
+				if v, err := memory.GetKeyValueOver(result[i]); err != nil {
+					memory.GetLive(fmt.Sprintf("%s-%d", "group-linshi", j.GroupID)).Delete(result[i])
+					memory.GetLive(fmt.Sprintf("%s-%d", "qq-linshi", j.UserID)).Delete(result[i])
+				} else {
+					m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】\n%s\n", result[i], v)))
+				}
+			}
+
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("空"))
+			}
+
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 25:
+		go func(j message.EventJSON) {
+			m := utils.NewMessage()
+			result, err := memory.GetLive(fmt.Sprintf("%s-%d", "qq-linshi", j.UserID)).Range()
+			if err != nil {
+				log.Error("我的招募列表", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			for i, _ := range result {
+				if v, err := memory.GetKeyValueOver(result[i]); err != nil {
+					memory.GetLive(fmt.Sprintf("%s-%d", "group-linshi", j.GroupID)).Delete(result[i])
+					memory.GetLive(fmt.Sprintf("%s-%d", "qq-linshi", j.UserID)).Delete(result[i])
+				} else {
+					m.AddMsg(utils.CQtext(fmt.Sprintf("\n【%s】\n%s\n", result[i], v)))
+				}
+			}
+
+			if len(result) == 0 {
+				m.AddMsg(utils.CQtext("空"))
+			}
+
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s)
+		return nil
+	case 26:
+		go func(j message.EventJSON, key string) {
+			m := utils.NewMessage()
+			result, err := memory.DeleteKey(key)
+			if err != nil {
+				log.Error("删除开服", err)
+				return
+			}
+			m.AddMsg(utils.CQat(fmt.Sprintf("%d", j.UserID)))
+			if result > 0 {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]成功!", key)))
+			} else {
+				m.AddMsg(utils.CQtext(fmt.Sprintf("\n删除[%s]失败，可能不存在。", key)))
+			}
+			memory.DefaultMes.Push(
+				message.SendMsg(j.MsgType, j.GroupID,
+					m.Message(), false, ""),
+			)
+		}(s, result[0])
+		return nil
 	}
 
 	return s
@@ -482,6 +587,8 @@ func handleCmd(cmd []string) (int, []string) {
 		switch c {
 		case "语音":
 			return 3, cmd[1:]
+		case "招募":
+			return 23, cmd[1:]
 		}
 	}
 
@@ -516,6 +623,10 @@ func handleCmd(cmd []string) (int, []string) {
 			return 18, []string{}
 		case "私聊开服列表":
 			return 20, []string{}
+		case "招募列表":
+			return 24, []string{}
+		case "我的招募":
+			return 25, []string{}
 		}
 	case 2:
 		switch c {
@@ -532,6 +643,8 @@ func handleCmd(cmd []string) (int, []string) {
 			return 22, []string{cmd[1]}
 		case "删除私聊监控":
 			return 10, []string{cmd[1]}
+		case "删除招募":
+			return 26, []string{cmd[1]}
 		case "多人抽奖":
 			tmp, err := strconv.ParseInt(cmd[1], 10, 64)
 			if err != nil {
