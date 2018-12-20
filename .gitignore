@@ -10,3 +10,4 @@ Makefile
 get_ip.py
 *.crt
 *.key
+vendor/
