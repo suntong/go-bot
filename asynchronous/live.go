@@ -34,10 +34,6 @@ func notification(name, noType string) {
 				continue
 			}
 
-			if _, ok = out.(int); ok {
-				continue
-			}
-
 			if out != nil && result == "false" {
 				tmp := strings.Index(item, "-")
 				id, err := strconv.ParseInt(item[tmp+1:], 10, 64)
@@ -98,7 +94,8 @@ func cyclic() {
 	}
 	for i := range server {
 		out := IsOnline(server[i])
-		if out != nil {
+		_, ok := out.(int)
+		if out != nil && !ok {
 			registerID.Store(server[i], out)
 			notification("inform", "server")
 		} else {

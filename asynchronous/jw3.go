@@ -78,7 +78,7 @@ func Jw3Server() {
 					serverState.Store(reJSON.Data[i].ServerName, 0)
 					break
 				}
-				if outTmp >= 3 {
+				if outTmp > 2 {
 					serverState.Store(reJSON.Data[i].ServerName, nil)
 				} else {
 					serverState.Store(reJSON.Data[i].ServerName, outTmp+1)
