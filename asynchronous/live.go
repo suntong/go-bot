@@ -95,11 +95,13 @@ func cyclic() {
 	for i := range server {
 		out := IsOnline(server[i])
 		_, ok := out.(int)
-		if out != nil && !ok {
-			registerID.Store(server[i], out)
+		if !ok {
+			if out != nil {
+				registerID.Store(server[i], out)
+			} else {
+				registerID.Store(server[i], nil)
+			}
 			notification("inform", "server")
-		} else {
-			registerID.Store(server[i], nil)
 		}
 	}
 }
