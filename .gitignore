@@ -11,3 +11,4 @@ get_ip.py
 *.crt
 *.key
 vendor/
+Gopkg.lock
