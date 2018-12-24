@@ -91,6 +91,10 @@ func Jw3Server() {
 
 func IsOnline(name string) interface{} {
 	if out, ok := serverState.Load(name); ok {
+		if out == nil {
+			return out
+		}
+
 		outTmp, ok := out.([]string)
 		if !ok {
 			return outTmp
